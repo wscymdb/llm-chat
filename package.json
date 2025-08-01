@@ -18,6 +18,8 @@
     "antd": "^5.26.7",
     "antd-style": "^3.7.1",
     "dayjs": "^1.11.13",
+    "dompurify": "^3.2.6",
+    "markdown-it": "^14.1.0",
     "normalize.css": "^8.0.1",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.2.0",
