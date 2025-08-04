@@ -1,4 +1,4 @@
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 /**
  * 比较传入的日期与今天的关系，支持日期字符串、秒级/毫秒级时间戳。
@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
  * compareDate('2024-06-17'); // => "2024-06-17"
  * compareDate('hello');      // => "无效日期"
  */
-export const compareDate = (input: string | number): string => {
+export const compareDate = (input: string | number | Dayjs): string => {
   let date =
     typeof input === 'number' || /^\d+$/.test(input + '')
       ? input.toString().length === 10

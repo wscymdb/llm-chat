@@ -2,8 +2,10 @@ import ChatList from '@/components/ChatList';
 import ChatSender from '@/components/ChatSender';
 import ChatSide from '@/components/ChatSide';
 import { HomeContext } from '@/context/HomeContext';
+import useLLMStore from '@/store';
 import { localCache } from '@/utils/cache';
 import { useXAgent, useXChat, type Conversation } from '@ant-design/x';
+import { Button } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import style from './style';
 
@@ -21,6 +23,12 @@ const Independent: React.FC = () => {
   const abortController = useRef<AbortController>(null);
   const [curConversation, setCurConversation] = useState('');
   const [conversations, setConversations] = useState<Conversation[]>([]);
+
+  const { getLocalConversations, initConversations } = useLLMStore() as any;
+
+  useEffect(() => {
+    initConversations();
+  }, []);
 
   const [agent] = useXAgent<BubbleDataType>({
     baseURL: 'http://127.0.0.1:8888/chat/',
@@ -154,6 +162,14 @@ const Independent: React.FC = () => {
       }}
     >
       <div className={styles.layout}>
+        <Button
+          onClick={() => {
+            getLocalConversations();
+          }}
+        >
+          get
+        </Button>
+
         <ChatSide />
         <div className={styles.chat}>
           <ChatList />

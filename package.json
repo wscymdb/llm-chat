@@ -19,6 +19,7 @@
     "antd-style": "^3.7.1",
     "dayjs": "^1.11.13",
     "dompurify": "^3.2.6",
+    "localforage": "^1.10.0",
     "markdown-it": "^14.1.0",
     "normalize.css": "^8.0.1",
     "prettier": "^3.6.2",
@@ -26,7 +27,9 @@
     "prettier-plugin-packagejson": "^2.5.19",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router": "^7.7.1"
+    "react-router": "^7.7.1",
+    "uuid": "^11.1.0",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.30.1",

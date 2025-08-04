@@ -1,4 +1,5 @@
 import { HomeContext } from '@/context/HomeContext';
+import useLLMStore from '@/store';
 import { localCache } from '@/utils/cache';
 import { compareDate } from '@/utils/compareDate';
 import { DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -6,6 +7,7 @@ import { Conversations, type Conversation } from '@ant-design/x';
 import { Avatar, Button, message } from 'antd';
 import dayjs from 'dayjs';
 import { useContext, useRef } from 'react';
+import { v4 as uuid } from 'uuid';
 import style from './style';
 
 const HISTORY_CONVERSATIONS = 'historyConversations';
@@ -14,15 +16,11 @@ const ChatSide = () => {
   const { styles } = style();
   const abortController = useRef<AbortController>(null);
 
-  const {
-    agent,
-    conversations,
-    setConversations,
-    curConversation,
-    setCurConversation,
-    setMessages,
-    onActiveConversationChange,
-  } = useContext(HomeContext);
+  const { conversations, curConversation, setLocalConversation, getLocalConversations, removeLocalConversation } =
+    useLLMStore() as any;
+
+  const { agent, setConversations, setCurConversation, setMessages, onActiveConversationChange } =
+    useContext(HomeContext);
 
   const getUpdatedConversations = (type: 'add' | 'delete', conversation: Conversation) => {
     let history: Conversation[] = localCache.getCache(HISTORY_CONVERSATIONS) || [];
@@ -45,27 +43,26 @@ const ChatSide = () => {
       return;
     }
 
-    const now = dayjs().valueOf().toString();
+    const date = dayjs().format('YYYY-MM-DD HH:mm:ss');
+    const id = uuid();
     const conversation = {
-      key: now,
+      key: id,
       label: '新的聊天',
-      group: compareDate(now),
+      date,
+      group: compareDate(date),
     };
     const newConversations = getUpdatedConversations('add', conversation);
 
+    setLocalConversation(conversation);
     setConversations(newConversations);
-    setCurConversation(now);
+    setCurConversation(id);
     setMessages([]);
     localCache.setCache(HISTORY_CONVERSATIONS, newConversations);
   };
 
   // 删除
   const handleDelete = (item: Conversation) => {
-    const newConversations = getUpdatedConversations('delete', item);
-    setConversations(newConversations);
-    setCurConversation(newConversations[0]?.key);
-    setMessages(newConversations[0]?.messages || []);
-    localCache.setCache(HISTORY_CONVERSATIONS, newConversations);
+    removeLocalConversation(item.key);
   };
 
   // 重命名
@@ -75,15 +72,7 @@ const ChatSide = () => {
 
   return (
     <div className={styles.sider}>
-      {/* 🌟 Logo */}
       <div className={styles.logo}>
-        {/* <img
-          src="https://mdn.alipayobjects.com/huamei_iwk9zp/afts/img/A*eco6RrQhxbMAAAAAAAAAAAAADgCCAQ/original"
-          draggable={false}
-          alt="logo"
-          width={24}
-          height={24}
-        /> */}
         <span>LLM问答</span>
       </div>
 
