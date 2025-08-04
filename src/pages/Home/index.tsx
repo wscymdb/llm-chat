@@ -12,59 +12,6 @@ type BubbleDataType = {
   content: string;
 };
 
-const DEFAULT_CONVERSATIONS_ITEMS = [
-  {
-    key: 'default-0',
-    label: 'What is Ant Design X?',
-    group: 'Today',
-    messages: [
-      {
-        id: 'msg_0',
-        message: {
-          role: 'user',
-          content: '你好',
-        },
-        status: 'local',
-      },
-      {
-        id: 'msg_2',
-        message: {
-          content: '你好！😊 很高兴见到你～有什么我可以帮你的吗？',
-          role: 'assistant',
-        },
-        status: 'success',
-      },
-      {
-        id: 'msg_3',
-        message: {
-          role: 'user',
-          content: '你是谁',
-        },
-        status: 'local',
-      },
-      {
-        id: 'msg_5',
-        message: {
-          content:
-            '我是 **DeepSeek Chat**，由深度求索公司（DeepSeek）开发的智能 AI 助手！🤖✨  \n\n我的任务是帮助你解答问题、提供信息、陪你聊天，甚至帮你处理各种文本、文件等内容。无论是学习、工作，还是日常生活中的疑问，我都会尽力帮你解决！💡  \n\n有什么想问的，尽管告诉我吧！😊',
-          role: 'assistant',
-        },
-        status: 'success',
-      },
-    ],
-  },
-  {
-    key: 'default-1',
-    label: 'How to quickly install and import components?',
-    group: 'Today',
-  },
-  {
-    key: 'default-2',
-    label: 'New AGI Hybrid Interface',
-    group: 'Yesterday',
-  },
-];
-
 const HISTORY_CONVERSATIONS = 'historyConversations';
 
 // localCache.setCache(HISTORY_CONVERSATIONS, DEFAULT_CONVERSATIONS_ITEMS);
@@ -79,28 +26,18 @@ const Independent: React.FC = () => {
     baseURL: 'http://127.0.0.1:8888/chat/',
   });
 
-  const onMineRequest = async (messages: BubbleDataType[]) => {
-    console.log(messages);
-    agent.request(
-      {
-        messages,
-        stream: true,
-      },
-      {
-        onSuccess: (chunks) => {
-          // setStatus('success');
-          console.log('onSuccess', chunks);
+  const changeConversationTitle = async (message: string) => {
+    try {
+      const result = await fetch('http://127.0.0.1:8888/chat/title', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        onError: (error) => {
-          // setStatus('error');
-          console.error('onError', error);
-        },
-        onUpdate: (chunk) => {
-          // setLines((pre) => [...pre, chunk]);
-          console.log('onUpdate', chunk);
-        },
-      },
-    );
+        body: JSON.stringify({ message }),
+      });
+      const con = await result.json();
+      console.log(con);
+    } catch (error) {}
   };
 
   const loading = agent.isRequesting();
@@ -120,17 +57,17 @@ const Independent: React.FC = () => {
         role: 'assistant',
       };
     },
-    // requestPlaceholder: () => {
-    //   return {
-    //     content: <SyncOutlined spin />,
-    //     role: 'assistant',
-    //   };
-    // },
+    requestPlaceholder: () => {
+      return {
+        content: '加载中...',
+        role: 'assistant',
+      };
+    },
     transformMessage: (info) => {
       const { originMessage, chunk } = info || {};
-      // console.log(info, 'info');
       let currentContent = '';
       let currentThink = '';
+
       try {
         if (chunk?.data && !chunk?.data.includes('DONE')) {
           const message = JSON.parse(chunk?.data);
@@ -213,6 +150,7 @@ const Independent: React.FC = () => {
         curConversation,
         setCurConversation,
         onActiveConversationChange,
+        changeConversationTitle,
       }}
     >
       <div className={styles.layout}>

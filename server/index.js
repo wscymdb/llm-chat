@@ -37,7 +37,6 @@ chatRouter.post('/', async (req, res) => {
     // openai返回的是AsyncIterable，逐步推送消息给前端
     for await (const chunk of stream) {
       if (chunk) {
-        console.log(chunk);
         res.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
     }
@@ -48,6 +47,32 @@ chatRouter.post('/', async (req, res) => {
     // 错误时发送一条带 error 字段的消息
     res.write(`data: [ERROR] ${err?.message || '未知错误'}\n\n`);
     res.end();
+  }
+});
+
+chatRouter.post('/title', async (req, res) => {
+  const { message } = req.body || {};
+
+  try {
+    // 保证最后一条是“生成标题”指令
+    const titlePrompt = {
+      role: 'user',
+      content: '你需要根据内容生成一个简洁聊天标题。只需要生成一个即可其他的不用生成',
+    };
+    const newMessages = [titlePrompt, { role: 'user', content: message }];
+
+    const result = await openai.chat.completions.create({
+      messages: newMessages,
+      model: 'deepseek-chat',
+    });
+
+    // 假设返回结构与 OpenAI 类似
+    const title = result?.choices?.[0]?.message?.content || '未生成标题';
+    console.log(title);
+
+    res.json({ title }); // 返回生成标题
+  } catch (err) {
+    res.status(500).json({ error: err?.message || '未知错误' });
   }
 });
 

@@ -1,18 +1,10 @@
 import { HomeContext } from '@/context/HomeContext';
 import { CopyOutlined, ReloadOutlined, UserOutlined } from '@ant-design/icons';
 import { Bubble, Welcome } from '@ant-design/x';
-import { Button, Space, Spin, Typography, type GetProp } from 'antd';
-import DOMPurify from 'dompurify';
-import markdownit from 'markdown-it';
+import { Button, Space, Spin, type GetProp } from 'antd';
 import { useContext } from 'react';
+import Markdown from '../Markdown';
 import style from './style';
-
-function parseCleanHtml(content) {
-  const cleanHtml = DOMPurify.sanitize(content);
-  return cleanHtml;
-}
-
-const md = markdownit({ html: true, breaks: true });
 
 const roles: GetProp<typeof Bubble.List, 'roles'> = {
   assistant: {
@@ -29,26 +21,12 @@ const roles: GetProp<typeof Bubble.List, 'roles'> = {
       </div>
     ),
     loadingRender: () => <Spin size="small" />,
-    messageRender(content) {
-      return (
-        <Typography>
-          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: used in demo */}
-          <div dangerouslySetInnerHTML={{ __html: md.render(parseCleanHtml(content)) }} />
-        </Typography>
-      );
-    },
+    messageRender: (content) => <Markdown>{content}</Markdown>,
   },
   user: {
     placement: 'end',
     avatar: { icon: <UserOutlined />, style: { background: '#87d068' } },
-    messageRender(content) {
-      return (
-        <Typography>
-          {/* biome-ignore lint/security/noDangerouslySetInnerHtml: used in demo */}
-          <div dangerouslySetInnerHTML={{ __html: md.render(parseCleanHtml(content)) }} />
-        </Typography>
-      );
-    },
+    messageRender: (content) => <Markdown>{content}</Markdown>,
   },
 };
 

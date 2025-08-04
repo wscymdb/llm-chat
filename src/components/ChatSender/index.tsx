@@ -9,15 +9,19 @@ const ChatSender = () => {
 
   const abortController = useRef<AbortController>(null);
   const [inputValue, setInputValue] = useState('');
-  const { loading, onRequest } = useContext(HomeContext);
+  const { loading, onRequest, changeConversationTitle } = useContext(HomeContext);
+  const firstRender = useRef(true);
 
   const onSubmit = (val: string) => {
     if (!val) return;
 
+    if (firstRender.current) {
+      changeConversationTitle(val);
+      firstRender.current = false;
+    }
+
     if (loading) {
-      message.error(
-        'Request is in progress, please wait for the request to complete.',
-      );
+      message.error('Request is in progress, please wait for the request to complete.');
       return;
     }
 
@@ -42,15 +46,7 @@ const ChatSender = () => {
       className={styles.sender}
       actions={(_, info) => {
         const { SendButton, LoadingButton } = info.components;
-        return (
-          <Flex gap={4}>
-            {loading ? (
-              <LoadingButton type="default" />
-            ) : (
-              <SendButton type="primary" />
-            )}
-          </Flex>
-        );
+        return <Flex gap={4}>{loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}</Flex>;
       }}
       placeholder="输入你想要的问题吧～"
     />
