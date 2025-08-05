@@ -10,35 +10,55 @@ localforage.config({
 interface LLMStoreState {
   curConversation: string;
   setCurConversation: (val: string) => void;
-
   conversations: Conversation[];
-
-  // 初始化
   initConversations: () => Promise<void>;
-
   getLocalConversations: () => Promise<Conversation[]>;
-
   setLocalConversation: (conversation: Conversation) => Promise<void>;
-
   setLocalConversations: (conversations: Conversation[]) => Promise<void>;
-
   removeLocalConversation: (key: string) => Promise<void>;
+  onConversationChange: (key: string) => void;
+  addMessages: (id: string, messages: any) => Promise<void>;
+  getMessages: (id: string) => Promise<any>;
 }
 
 const useLLMStore = create<LLMStoreState>((set, get) => ({
+  // active的会话
   curConversation: '',
   setCurConversation(val: string) {
     set({ curConversation: val });
   },
 
+  // 会话列表
   conversations: [],
+
+  async addMessages(id: string, messages: any) {
+    try {
+      await localforage.setItem(`message_${id}`, messages);
+    } catch (error) {
+      // 出错
+      console.error('存储失败:', error);
+    }
+  },
+
+  async getMessages(id: string) {
+    try {
+      const messages = await localforage.getItem(`message_${id}`);
+      return messages || [];
+    } catch (error) {
+      // 出错
+      console.error('获取会话列表失败conversations:', error);
+      return [];
+    }
+  },
 
   // 初始化
   async initConversations() {
     const result = (await localforage.getItem<Conversation[]>('conversations')) || [];
-    set({ conversations: result });
+    const curConversation = result[0]?.key || '';
+    set({ conversations: result, curConversation });
   },
 
+  // 获取会话列表
   async getLocalConversations() {
     try {
       const conversations = await localforage.getItem<Conversation[]>('conversations');
@@ -50,6 +70,7 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
     }
   },
 
+  // 存储单个会话
   async setLocalConversation(conversation: Conversation) {
     try {
       const state = get();
@@ -64,6 +85,7 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
     }
   },
 
+  // 存储会话列表
   async setLocalConversations(conversations: Record<string, any>) {
     try {
       await localforage.setItem('conversations', conversations);
@@ -73,6 +95,7 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
     }
   },
 
+  // 删除单个会话
   async removeLocalConversation(key: string) {
     try {
       const state = get();
@@ -85,6 +108,10 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
       // 出错
       console.error('删除会话列表失败conversations:', error);
     }
+  },
+
+  onConversationChange(key: string) {
+    set({ curConversation: key });
   },
 }));
 

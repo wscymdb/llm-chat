@@ -4,9 +4,9 @@ import { localCache } from '@/utils/cache';
 import { compareDate } from '@/utils/compareDate';
 import { DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Conversations, type Conversation } from '@ant-design/x';
-import { Avatar, Button, message } from 'antd';
+import { Avatar, Button } from 'antd';
 import dayjs from 'dayjs';
-import { useContext, useRef } from 'react';
+import { useContext } from 'react';
 import { v4 as uuid } from 'uuid';
 import style from './style';
 
@@ -14,13 +14,19 @@ const HISTORY_CONVERSATIONS = 'historyConversations';
 
 const ChatSide = () => {
   const { styles } = style();
-  const abortController = useRef<AbortController>(null);
 
-  const { conversations, curConversation, setLocalConversation, getLocalConversations, removeLocalConversation } =
-    useLLMStore() as any;
+  const {
+    conversations,
+    curConversation,
+    setLocalConversation,
+    onConversationChange,
+    setCurConversation,
+    removeLocalConversation,
+    getMessages,
+    addMessages,
+  } = useLLMStore();
 
-  const { agent, setConversations, setCurConversation, setMessages, onActiveConversationChange } =
-    useContext(HomeContext);
+  const { messages, setMessages } = useContext(HomeContext);
 
   const getUpdatedConversations = (type: 'add' | 'delete', conversation: Conversation) => {
     let history: Conversation[] = localCache.getCache(HISTORY_CONVERSATIONS) || [];
@@ -36,12 +42,12 @@ const ChatSide = () => {
 
   // 添加
   const handleAdd = () => {
-    if (agent.isRequesting()) {
-      message.error(
-        'Message is Requesting, you can create a new conversation after request done or abort it right now...',
-      );
-      return;
-    }
+    // if (agent.isRequesting()) {
+    //   message.error(
+    //     'Message is Requesting, you can create a new conversation after request done or abort it right now...',
+    //   );
+    //   return;
+    // }
 
     const date = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const id = uuid();
@@ -54,7 +60,6 @@ const ChatSide = () => {
     const newConversations = getUpdatedConversations('add', conversation);
 
     setLocalConversation(conversation);
-    setConversations(newConversations);
     setCurConversation(id);
     setMessages([]);
     localCache.setCache(HISTORY_CONVERSATIONS, newConversations);
@@ -65,9 +70,11 @@ const ChatSide = () => {
     removeLocalConversation(item.key);
   };
 
-  // 重命名
-  const handleRename = (item: Conversation) => {
-    console.log(item);
+  const handleChange = async (currKey: string, prevKey: string) => {
+    await addMessages(prevKey, messages);
+    setMessages([]);
+
+    onConversationChange(currKey);
   };
 
   return (
@@ -75,7 +82,6 @@ const ChatSide = () => {
       <div className={styles.logo}>
         <span>LLM问答</span>
       </div>
-
       {/* 🌟 添加会话 */}
       <Button onClick={handleAdd} type="link" className={styles.addBtn} icon={<PlusOutlined />}>
         开启新对话
@@ -89,7 +95,7 @@ const ChatSide = () => {
         // onActiveChange={async (val) => {
         //   abortController.current?.abort();
         // }}
-        onActiveChange={(val) => onActiveConversationChange(val)}
+        onActiveChange={(curr) => handleChange(curr, curConversation)}
         groupable
         styles={{ item: { padding: '0 8px' } }}
         menu={(conversation) => ({

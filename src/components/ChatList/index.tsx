@@ -41,12 +41,20 @@ const ChatList = () => {
         <Bubble.List
           roles={roles}
           items={messages?.map((i: any) => ({
-            ...i.message,
+            content: i.content,
+            role: i.role,
             classNames: {
               content: i.status === 'loading' ? styles.loadingMessage : '',
             },
             typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
           }))}
+          // items={curMessages?.map((i: any) => ({
+          //   ...i.message,
+          //   classNames: {
+          //     content: i.status === 'loading' ? styles.loadingMessage : '',
+          //   },
+          //   typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
+          // }))}
           style={{
             height: '100%',
             paddingInline: 'calc(calc(100% - 700px) /2)',
