@@ -19,6 +19,8 @@ interface LLMStoreState {
   onConversationChange: (key: string) => void;
   addMessages: (id: string, messages: any) => Promise<void>;
   getMessages: (id: string) => Promise<any>;
+  changeLocalConversationLabel: (curConversation: string, label: string) => Promise<void>;
+  getLocalConversation: (key: string) => Promise<Conversation | undefined>;
 }
 
 const useLLMStore = create<LLMStoreState>((set, get) => ({
@@ -54,6 +56,7 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
   // 初始化
   async initConversations() {
     const result = (await localforage.getItem<Conversation[]>('conversations')) || [];
+    console.log(result, 'rr');
     const curConversation = result[0]?.key || '';
     set({ conversations: result, curConversation });
   },
@@ -67,6 +70,39 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
       // 出错
       console.error('获取会话列表失败conversations:', error);
       return [];
+    }
+  },
+
+  // 获取单个会话
+  async getLocalConversation(key: string) {
+    try {
+      const store = get();
+      const conversations = await store.getLocalConversations();
+      const conversation = conversations?.find((item) => item.key === key);
+      return conversation;
+    } catch (error) {
+      // 出错
+      console.error('获取会话列表失败conversations:', error);
+    }
+  },
+
+  // 修改单个会话的label
+  async changeLocalConversationLabel(curConversationKey: string, label: string) {
+    try {
+      const state = get();
+      const conversations = await state.getLocalConversations();
+
+      // 用 map 返回新数组，实现不可变写法
+      const updatedConversations = conversations.map((c) => (c.key === curConversationKey ? { ...c, label } : c));
+
+      // 判断是否真的有更新，有则set和存储
+      const hasChanged = conversations.some((c) => c.key === curConversationKey && c.label !== label);
+      if (hasChanged) {
+        set({ conversations: updatedConversations });
+        await state.setLocalConversations(updatedConversations);
+      }
+    } catch (error) {
+      console.error('changeLocalConversationLabel 存储失败:', error);
     }
   },
 
@@ -89,6 +125,7 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
   async setLocalConversations(conversations: Record<string, any>) {
     try {
       await localforage.setItem('conversations', conversations);
+      console.log(conversations, 'save');
     } catch (error) {
       // 出错
       console.error('存储失败:', error);

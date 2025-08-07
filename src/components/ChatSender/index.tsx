@@ -9,14 +9,14 @@ const ChatSender = () => {
 
   const abortController = useRef<AbortController>(null);
   const [inputValue, setInputValue] = useState('');
-  const { loading, agent, onRequest, changeConversationTitle } = useContext(HomeContext);
+  const { loading, onRequest, changeConversationTitle } = useContext(HomeContext);
   const firstRender = useRef(true);
 
   const onSubmit = (val: string) => {
     if (!val) return;
 
     if (firstRender.current) {
-      // changeConversationTitle(val);
+      changeConversationTitle(val);
       firstRender.current = false;
     }
 
@@ -25,10 +25,6 @@ const ChatSender = () => {
       return;
     }
 
-    // onRequest({
-    //   stream: true,
-    //   message: { role: 'user', content: val },
-    // });
     onRequest({ role: 'user', content: val });
   };
 

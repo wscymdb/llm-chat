@@ -4,13 +4,17 @@ import ChatSide from '@/components/ChatSide';
 import { HomeContext } from '@/context/HomeContext';
 import useChat from '@/hooks/useChat';
 import useLLMStore from '@/store';
+import { ConfigProvider } from 'antd';
+import zhCN from 'antd/locale/zh_CN';
 import React, { useEffect, useState } from 'react';
 import style from './style';
+// for date-picker i18n
+import 'dayjs/locale/zh-cn';
 
 const Independent: React.FC = () => {
   const { styles } = style();
   const [showSender, setShowSender] = useState(true);
-  const { curConversation, conversations, initConversations } = useLLMStore();
+  const { curConversation, conversations, changeLocalConversationLabel, initConversations } = useLLMStore();
   const { messages, setMessages, customRequest } = useChat();
 
   useEffect(() => {
@@ -34,31 +38,41 @@ const Independent: React.FC = () => {
         },
         body: JSON.stringify({ message }),
       });
-      const con = await result.json();
-      console.log(con);
+      const { title } = await result.json();
+      changeLocalConversationLabel(curConversation, title);
+      console.log(title, curConversation, conversations);
     } catch (error) {}
   };
 
   const loading = false;
 
   return (
-    <HomeContext.Provider
-      value={{
-        loading,
-        setMessages,
-        onRequest: customRequest,
-        messages,
-        changeConversationTitle,
+    <ConfigProvider
+      locale={zhCN}
+      theme={{
+        token: {
+          colorPrimary: '#000000',
+        },
       }}
     >
-      <div className={styles.layout}>
-        <ChatSide />
-        <div className={styles.chat}>
-          <ChatList />
-          {showSender && <ChatSender />}
+      <HomeContext.Provider
+        value={{
+          loading,
+          setMessages,
+          onRequest: customRequest,
+          messages,
+          changeConversationTitle,
+        }}
+      >
+        <div className={styles.layout}>
+          <ChatSide />
+          <div className={styles.chat}>
+            <ChatList />
+            {showSender && <ChatSender />}
+          </div>
         </div>
-      </div>
-    </HomeContext.Provider>
+      </HomeContext.Provider>
+    </ConfigProvider>
   );
 };
 

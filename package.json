@@ -12,6 +12,7 @@
     "commit": "npx cz"
   },
   "dependencies": {
+    "@ant-design/colors": "^7.2.1",
     "@ant-design/icons": "^6.0.0",
     "@ant-design/pro-chat": "^1.15.3",
     "@ant-design/x": "^1.6.0",
