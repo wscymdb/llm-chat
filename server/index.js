@@ -57,7 +57,10 @@ chatRouter.post('/title', async (req, res) => {
     // 保证最后一条是“生成标题”指令
     const titlePrompt = {
       role: 'user',
-      content: '你需要根据内容生成一个简洁聊天标题。只需要生成一个即可其他的不用生成',
+      content: `你需要根据内容生成一个简洁聊天标题,不要带标点符号。只需要生成一个即可其他的不用生成
+      正确示例：询问天气
+      错误示范："询问天气"
+      `,
     };
     const newMessages = [titlePrompt, { role: 'user', content: message }];
 

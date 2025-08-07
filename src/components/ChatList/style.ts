@@ -5,6 +5,13 @@ export default createStyles(({ token, css }) => {
     chatList: css`
       flex: 1;
       overflow: auto;
+      padding-bottom: 16px;
+
+      .ant-bubble {
+        &:first-child {
+          margin-top: 56px;
+        }
+      }
     `,
     loadingMessage: css`
       background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
@@ -13,7 +20,7 @@ export default createStyles(({ token, css }) => {
       background-position: bottom;
     `,
     placeholder: css`
-      padding-top: 32px;
+      padding-top: 58px;
     `,
   };
 });
