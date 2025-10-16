@@ -1,6 +1,6 @@
 import { HomeContext } from '@/context/HomeContext';
 import { Sender } from '@ant-design/x';
-import { Flex, message } from 'antd';
+import { Flex } from 'antd';
 import { useContext, useRef, useState } from 'react';
 import style from './style';
 
@@ -9,21 +9,22 @@ const ChatSender = () => {
 
   const abortController = useRef<AbortController>(null);
   const [inputValue, setInputValue] = useState('');
-  const { loading, onRequest, changeConversationTitle } = useContext(HomeContext);
+  const { loading, onRequest, changeConversationTitle } = useContext(HomeContext)!;
   const firstRender = useRef(true);
 
   const onSubmit = (val: string) => {
-    if (!val) return;
+    if (!val.trim()) return;
 
     if (firstRender.current) {
       changeConversationTitle(val);
       firstRender.current = false;
     }
 
-    if (loading) {
-      message.error('Request is in progress, please wait for the request to complete.');
-      return;
-    }
+    // 这里进不来 因为组件层面loading会被拦截 后续入果使用自定义的组件这里要放开
+    // if (loading) {
+    //   message.error('Request is in progress, please wait for the request to complete.');
+    //   return;
+    // }
 
     onRequest({ role: 'user', content: val });
   };

@@ -18,13 +18,12 @@ const ChatSide = () => {
     conversations,
     curConversation,
     setLocalConversation,
-    onConversationChange,
     setCurConversation,
     removeLocalConversation,
     addMessages,
   } = useLLMStore();
 
-  const { messages, setMessages } = useContext(HomeContext);
+  const { messages, setMessages } = useContext(HomeContext)!;
 
   // 添加
   const handleAdd = () => {
@@ -52,7 +51,7 @@ const ChatSide = () => {
     await addMessages(prevKey, messages);
     setMessages([]);
 
-    onConversationChange(currKey);
+    setCurConversation(currKey);
   };
 
   return (
@@ -80,13 +79,13 @@ const ChatSide = () => {
           menu={(conversation) => ({
             items: [
               {
-                label: 'Rename',
+                label: '重命名',
                 key: 'rename',
                 icon: <EditOutlined />,
                 onClick: () => setShowRename(true),
               },
               {
-                label: 'Delete',
+                label: '删除',
                 key: 'delete',
                 icon: <DeleteOutlined />,
                 danger: true,

@@ -7,7 +7,7 @@ import style from './style';
 
 const ChatList = () => {
   const { styles } = style();
-  const { messages } = useContext(HomeContext);
+  const { messages } = useContext(HomeContext)!;
 
   if (Array.isArray(messages) && !messages.length) {
     return (
@@ -33,14 +33,19 @@ const ChatList = () => {
     <div className={styles.chatList}>
       <Bubble.List
         roles={roles}
-        items={messages?.map((i: any) => ({
-          content: i.content,
-          role: i.role,
-          classNames: {
-            content: i.status === 'loading' ? styles.loadingMessage : '',
-          },
-          typing: i.status === 'loading' ? { step: 5, interval: 20, suffix: <>💗</> } : false,
-        }))}
+        items={messages?.map((i) => {
+          const isLoading = i?.status === 'loading';
+
+          return {
+            content: i.content,
+            role: i.role,
+            loading: i.content === '',
+            classNames: {
+              content: isLoading ? styles.loadingMessage : '',
+            },
+            typing: isLoading ? { step: 5, interval: 20, suffix: <>💗</> } : false,
+          };
+        })}
         style={{
           height: '100%',
           paddingInline: 'calc(calc(100% - 700px) /2)',

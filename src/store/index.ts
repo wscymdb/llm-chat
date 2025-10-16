@@ -16,7 +16,7 @@ interface LLMStoreState {
   setLocalConversation: (conversation: Conversation) => Promise<void>;
   setLocalConversations: (conversations: Conversation[]) => Promise<void>;
   removeLocalConversation: (key: string) => Promise<void>;
-  onConversationChange: (key: string) => void;
+  // onConversationChange: (key: string) => void;
   addMessages: (id: string, messages: any) => Promise<void>;
   getMessages: (id: string) => Promise<any>;
   changeLocalConversationLabel: (curConversation: string, label: string) => Promise<void>;
@@ -26,9 +26,17 @@ interface LLMStoreState {
 const useLLMStore = create<LLMStoreState>((set, get) => ({
   // active的会话
   curConversation: '',
+  // curConversation: 'f2280976-87b5-4c5e-8fe8-15939733bf8a',
   setCurConversation(val: string) {
     set({ curConversation: val });
+    localforage.setItem('curConversation', val);
   },
+
+  // 切换会话
+  // onConversationChange(key: string) {
+  //   set({ curConversation: key });
+  //   localCache.setCache('curConversation', key);
+  // },
 
   // 会话列表
   conversations: [],
@@ -56,8 +64,10 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
   // 初始化
   async initConversations() {
     const result = (await localforage.getItem<Conversation[]>('conversations')) || [];
-    console.log(result, 'rr');
-    const curConversation = result[0]?.key || '';
+
+    const curConversation = (await localforage.getItem<string>('curConversation')) || result[0]?.key || '';
+    console.log(result, 'curConversation');
+
     set({ conversations: result, curConversation });
   },
 
@@ -145,10 +155,6 @@ const useLLMStore = create<LLMStoreState>((set, get) => ({
       // 出错
       console.error('删除会话列表失败conversations:', error);
     }
-  },
-
-  onConversationChange(key: string) {
-    set({ curConversation: key });
   },
 }));
 

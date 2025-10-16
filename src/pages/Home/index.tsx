@@ -17,7 +17,7 @@ const Independent: React.FC = () => {
   const [showSender, setShowSender] = useState(true);
   const { curConversation, conversations, addMessages, changeLocalConversationLabel, initConversations } =
     useLLMStore();
-  const { messages, setMessages, customRequest } = useChat();
+  const { messages, loading, setMessages, customRequest } = useChat();
 
   const curSession = useMemo(() => {
     return conversations.find((item) => item.key === curConversation);
@@ -65,7 +65,7 @@ const Independent: React.FC = () => {
     } catch (error) {}
   };
 
-  const loading = false;
+  // const loading = false;
 
   return (
     <ConfigProvider

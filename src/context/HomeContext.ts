@@ -1,3 +1,8 @@
+import type { CustomBubbleDataType } from '@/types/BubbleType';
 import { createContext } from 'react';
 
-export const HomeContext = createContext<any>({});
+interface HomeContextType {
+  messages: CustomBubbleDataType[];
+  [index: string]: any;
+}
+export const HomeContext = createContext<HomeContextType | null>(null);
