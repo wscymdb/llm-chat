@@ -51,18 +51,28 @@ chatRouter.post('/', async (req, res) => {
 });
 
 chatRouter.post('/title', async (req, res) => {
-  const { message } = req.body || {};
+  const { messages = [] } = req.body || {};
 
   try {
     // 保证最后一条是“生成标题”指令
     const titlePrompt = {
       role: 'user',
-      content: `你需要根据内容生成一个简洁聊天标题,不要带标点符号。只需要生成一个即可其他的不用生成
-      正确示例：询问天气
-      错误示范："询问天气"
+      content: `你需要根据已有的对话生成一个标题，要求如下：
+      1. 标题必须简洁明了，控制在10个汉字以内。
+      2. 标题应准确反映对话的核心内容和主题。
+      3. 避免使用模糊或通用的词汇，确保标题具有独特性。
+      4. 不要包含任何引号或多余的标点符号。
+      5. 只返回标题文本，不要添加任何解释或额外信息。
+      6. 直接返回标题，不要使用任何引号。
+      7. 标题应为中文。
+
+      示例：
+      错误示例：根据对话内容，标题应为： **情绪疏导**
+      错误示范：情绪疏导
       `,
     };
-    const newMessages = [titlePrompt, { role: 'user', content: message }];
+
+    const newMessages = [titlePrompt, ...messages];
 
     const result = await openai.chat.completions.create({
       messages: newMessages,

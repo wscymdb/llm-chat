@@ -1,5 +1,6 @@
 import useLLMStore from '@/store';
 import type { CustomBubbleDataType } from '@/types/BubbleType';
+import { generateUniqueId } from '@/utils/uuid';
 import type { BubbleDataType } from '@ant-design/x/es/bubble/BubbleList';
 import { useEffect, useRef, useState } from 'react';
 
@@ -29,7 +30,7 @@ const useChat = () => {
     messagesRef.current = messages;
   }, [messages]);
 
-  const { curConversation, getMessages } = useLLMStore();
+  const { curConversation, getMessages, addMessages } = useLLMStore();
 
   // 初始化历史消息
   useEffect(() => {
@@ -38,6 +39,7 @@ const useChat = () => {
 
     (async () => {
       const historyMsgs = await getMessages(curConversation);
+
       if (!cancelled) {
         setMessages(historyMsgs);
       }
@@ -102,7 +104,8 @@ const useChat = () => {
           const updated: CustomBubbleDataType = {
             ...m,
             content: (m.content || '') + buf,
-            status: 'loading',
+            // nn: { ...deltaBufferRef.current },
+            // status: 'loading',
           };
 
           // 已经消费该缓冲，删除以释放内存并避免重复应用
@@ -123,15 +126,18 @@ const useChat = () => {
   }
 
   // 派发用户消息+AI (占位) 消息，并内置流式拼接与 loading 状态管理
-  const customRequest = (userMessage: CustomBubbleDataType) => {
-    const id = `assistant-${Date.now()}`;
+  const customRequest = async (userMessage: CustomBubbleDataType) => {
+    const id = `assistant-${generateUniqueId()}`;
     const aiMsg: CustomBubbleDataType = {
-      // id,
       key: id,
       role: 'assistant',
       content: '',
       status: 'loading',
     };
+
+    // 清理上一次残留的 buffer / raf 状态，避免影响本次流式更新
+    deltaBufferRef.current = {};
+    rafScheduledRef.current = false;
 
     // 将新消息追加到 state 并同步到 ref，避免后续 fetch 使用 stale messages
     setMessages((prev) => {
@@ -141,29 +147,28 @@ const useChat = () => {
     });
     setLoading(true);
 
-    // 传入当前最新 messages（messagesRef），fetchSSE 内部不会依赖闭包的旧值
-    fetchSSE(messagesRef.current, (delta) => {
-      appendDeltaAndFlush(id, delta);
-    })
-      .catch((err) => {
-        console.error(err);
-      })
-      .finally(() => {
-        if (!isMountedRef.current) return;
-
-        // 标记 ai 消息为成功
-        setMessages((prev) => {
-          const idx = prev.findIndex((m) => m.id === id);
-          if (idx === -1) return prev;
-          // 'done' 是预定义的 StatusType 值之一，用来表示已完成
-          const updated: CustomBubbleDataType = { ...prev[idx], status: 'done' };
-          const next = [...prev.slice(0, idx), updated, ...prev.slice(idx + 1)];
-          messagesRef.current = next;
-          return next;
-        });
-
-        setLoading(false);
+    try {
+      await fetchSSE(messagesRef.current, (delta) => {
+        appendDeltaAndFlush(id, delta);
       });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      if (!isMountedRef.current) return;
+
+      const doneMessages: CustomBubbleDataType[] = messagesRef.current.map((m) => {
+        if (m.key === id) {
+          return { ...m, status: 'done' };
+        }
+        return m;
+      });
+
+      messagesRef.current = doneMessages;
+      setMessages(doneMessages);
+      await addMessages(curConversation, doneMessages);
+      setLoading(false);
+      return doneMessages;
+    }
   };
 
   // 封装fetch及SSE解析, 流式回调 onDelta

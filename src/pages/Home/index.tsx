@@ -9,7 +9,6 @@ import zhCN from 'antd/locale/zh_CN';
 import React, { useEffect, useMemo, useState } from 'react';
 import style from './style';
 // for date-picker i18n
-import useAutoSaveOnPageLeave from '@/hooks/useAutoSaveOnPageLeave';
 import 'dayjs/locale/zh-cn';
 
 const Independent: React.FC = () => {
@@ -47,21 +46,20 @@ const Independent: React.FC = () => {
     await addMessages(curConversation, messages);
   };
 
-  useAutoSaveOnPageLeave(getLatestData, saveData, [curConversation, messages]);
+  // useAutoSaveOnPageLeave(getLatestData, saveData, [curConversation, messages]);
   // ===================================
 
-  const changeConversationTitle = async (message: string) => {
+  const changeConversationTitle = async (messages: string) => {
     try {
       const result = await fetch('http://127.0.0.1:8888/chat/title', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ messages }),
       });
       const { title } = await result.json();
-      changeLocalConversationLabel(curConversation, title);
-      console.log(title, curConversation, conversations);
+      await changeLocalConversationLabel(curConversation, title, true);
     } catch (error) {}
   };
 
@@ -89,7 +87,6 @@ const Independent: React.FC = () => {
           <ChatSide />
           <div className={styles.chat}>
             <div className={styles.header}>{curSession?.label}</div>
-
             <ChatList />
             {showSender && <ChatSender />}
           </div>

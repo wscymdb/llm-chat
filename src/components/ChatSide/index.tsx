@@ -1,6 +1,8 @@
+import LogoImg from '@/assets/images/logo.png';
 import { HomeContext } from '@/context/HomeContext';
 import useLLMStore from '@/store';
 import { compareDate } from '@/utils/compareDate';
+import { generateUniqueId } from '@/utils/uuid';
 import { DeleteOutlined, EditOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { Conversations, type Conversation } from '@ant-design/x';
 import { Button, Flex, Tooltip } from 'antd';
@@ -26,29 +28,40 @@ const ChatSide = () => {
   const { messages, setMessages } = useContext(HomeContext)!;
 
   // 添加
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const date = dayjs().format('YYYY-MM-DD HH:mm:ss');
     const id = uuid();
     const conversation = {
       key: id,
       label: '新的聊天',
+      isAILabel: false,
       date,
       group: compareDate(date),
     };
 
-    setLocalConversation(conversation);
+    await setLocalConversation(conversation);
     setCurConversation(id);
-    setMessages([]);
+
+    await addMessages(id, messages);
+    setMessages([
+      {
+        key: `assistant-${generateUniqueId()}`,
+        role: 'assistant',
+        content: '你好！有什么我可以帮助你的吗？',
+        status: 'success',
+      },
+    ]);
   };
 
   // 删除
   const handleDelete = (item: Conversation) => {
     removeLocalConversation(item.key);
+    setMessages([]);
   };
 
   const handleChange = async (currKey: string, prevKey: string) => {
     if (currKey === prevKey) return;
-    await addMessages(prevKey, messages);
+    // await addMessages(prevKey, messages);
     setMessages([]);
 
     setCurConversation(currKey);
@@ -58,6 +71,7 @@ const ChatSide = () => {
     <>
       <div className={styles.side}>
         <div className={styles.logo}>
+          <img width={50} height={50} src={LogoImg} alt="" />
           <span>LLM问答</span>
         </div>
         {/* 🌟 添加会话 */}

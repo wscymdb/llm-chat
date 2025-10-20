@@ -23,13 +23,10 @@ export default (props: IProps) => {
 
   const initData = async () => {
     const conversation = await getLocalConversation(curConversation);
-    console.log(conversation, 'cu');
     form.setFieldValue('title', conversation?.label || '');
   };
 
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-    console.log('Success:', values);
-
     changeLocalConversationLabel(curConversation, values?.title || '');
     onClose(true);
   };

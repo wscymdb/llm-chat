@@ -1,4 +1,5 @@
 import { HomeContext } from '@/context/HomeContext';
+import useLLMStore from '@/store';
 import { Sender } from '@ant-design/x';
 import { Flex } from 'antd';
 import { useContext, useRef, useState } from 'react';
@@ -10,15 +11,14 @@ const ChatSender = () => {
   const abortController = useRef<AbortController>(null);
   const [inputValue, setInputValue] = useState('');
   const { loading, onRequest, changeConversationTitle } = useContext(HomeContext)!;
-  const firstRender = useRef(true);
 
-  const onSubmit = (val: string) => {
+  const { curConversation, getLocalConversation } = useLLMStore();
+
+  const onSubmit = async (val: string) => {
     if (!val.trim()) return;
 
-    if (firstRender.current) {
-      changeConversationTitle(val);
-      firstRender.current = false;
-    }
+    const curConversationObj = await getLocalConversation(curConversation);
+    console.log(curConversationObj, 'curConversationObj');
 
     // 这里进不来 因为组件层面loading会被拦截 后续入果使用自定义的组件这里要放开
     // if (loading) {
@@ -26,7 +26,12 @@ const ChatSender = () => {
     //   return;
     // }
 
-    onRequest({ role: 'user', content: val });
+    const messages = await onRequest({ role: 'user', content: val });
+
+    console.log(messages, 'messagesdone');
+    if (!curConversationObj?.isAILabel) {
+      changeConversationTitle(messages);
+    }
   };
 
   return (

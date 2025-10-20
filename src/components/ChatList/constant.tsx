@@ -7,7 +7,6 @@ export const roles: GetProp<typeof Bubble.List, 'roles'> = {
   assistant: {
     placement: 'start',
     avatar: { icon: <UserOutlined />, style: { background: '#fde3cf' } },
-    typing: { step: 5, interval: 20 },
     style: {
       maxWidth: 600,
     },
