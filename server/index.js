@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import OpenAI from 'openai';
+import mainPrompt from './prompts/mainPrompt.js';
 
 const app = express();
 
@@ -27,9 +28,11 @@ chatRouter.post('/', async (req, res) => {
   res.flushHeaders && res.flushHeaders(); // 立即刷新响应头
 
   try {
+    const newMessages = [mainPrompt, ...messages];
+
     // 注意这里：不 await，直接得到 AsyncIterable 进行流式处理
     const stream = await openai.chat.completions.create({
-      messages: messages,
+      messages: newMessages,
       model: 'deepseek-chat',
       stream: true,
     });

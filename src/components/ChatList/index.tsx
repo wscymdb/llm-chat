@@ -28,7 +28,6 @@ const ChatList = memo(() => {
         })}
         style={{
           height: '100%',
-          paddingInline: 'calc(calc(100% - 800px) /2)',
         }}
       />
     </div>

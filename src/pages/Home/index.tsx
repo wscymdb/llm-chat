@@ -34,21 +34,6 @@ const Independent: React.FC = () => {
     initConversations();
   }, []);
 
-  // ==============自动保存数据=====================
-  // 获取要保存的数据
-  const getLatestData = () => ({
-    curConversation,
-    messages,
-  });
-
-  // 保存方法
-  const saveData = async ({ curConversation, messages }: any) => {
-    await addMessages(curConversation, messages);
-  };
-
-  // useAutoSaveOnPageLeave(getLatestData, saveData, [curConversation, messages]);
-  // ===================================
-
   const changeConversationTitle = async (messages: string) => {
     try {
       const result = await fetch('http://127.0.0.1:8888/chat/title', {

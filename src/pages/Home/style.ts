@@ -13,8 +13,10 @@ export default createStyles(({ token, css }) => {
 
     // chat list 样式
     chat: css`
-      height: 100%;
       flex: 1;
+      height: 100%;
+      max-width: 800px;
+      margin: 0 auto;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;

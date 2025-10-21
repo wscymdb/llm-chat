@@ -12,6 +12,12 @@ export default createStyles(({ token, css }) => {
           margin-top: 56px;
         }
       }
+
+      .ant-bubble-list {
+        padding-inline: 20px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+      }
     `,
     loadingMessage: css`
       background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);

@@ -154,21 +154,23 @@ const useChat = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      if (!isMountedRef.current) return;
+      if (isMountedRef.current) {
+        const doneMessages: CustomBubbleDataType[] = messagesRef.current.map((m) => {
+          if (m.key === id) {
+            return { ...m, status: 'done' };
+          }
+          return m;
+        });
 
-      const doneMessages: CustomBubbleDataType[] = messagesRef.current.map((m) => {
-        if (m.key === id) {
-          return { ...m, status: 'done' };
-        }
-        return m;
-      });
-
-      messagesRef.current = doneMessages;
-      setMessages(doneMessages);
-      await addMessages(curConversation, doneMessages);
-      setLoading(false);
-      return doneMessages;
+        messagesRef.current = doneMessages;
+        setMessages(doneMessages);
+        await addMessages(curConversation, doneMessages);
+        setLoading(false);
+      }
     }
+
+    // 返回最终的消息列表
+    return messagesRef.current;
   };
 
   // 封装fetch及SSE解析, 流式回调 onDelta
